@@ -1,0 +1,17 @@
+idx,type,name,lat,lon,priority,demand
+0,origin,Hospital Central,-23.5505,-46.6333,,0
+1,hospital,Unidade Hospitalar A,-23.5600,-46.6400,ALTA,30
+2,hospital,Unidade Hospitalar B,-23.5700,-46.6200,MEDIA,20
+3,hospital,Unidade Hospitalar C,-23.5300,-46.6100,BAIXA,10
+4,hospital,Unidade Hospitalar D,-23.5450,-46.6600,ALTA,25
+5,hospital,Unidade Hospitalar E,-23.5900,-46.6300,MEDIA,35
+6,hospital,Unidade Hospitalar F,-23.5150,-46.6450,BAIXA,15
+7,hospital,Unidade Hospitalar G,-23.5750,-46.6750,ALTA,40
+8,hospital,Unidade Hospitalar H,-23.6000,-46.6000,MEDIA,20
+9,hospital,Unidade Hospitalar I,-23.5250,-46.5850,BAIXA,15
+10,hospital,Unidade Hospitalar J,-23.6100,-46.6550,ALTA,30
+11,hospital,Unidade Hospitalar K,-23.5050,-46.6250,MEDIA,25
+12,hospital,Unidade Hospitalar L,-23.5850,-46.5900,BAIXA,10
+100,supply,Abastecimento Norte,-23.5200,-46.6300,,0
+101,supply,Abastecimento Sul,-23.5950,-46.6500,,0
+102,supply,Abastecimento Leste,-23.5500,-46.5850,,0
