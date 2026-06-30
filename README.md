@@ -1,17 +1,19 @@
 # FIAP-9IADT-medical-route-optimization
 
-Medical route optimization using Genetic Algorithm for hospital supply distribution.
+Otimizacao de rotas medicas usando algoritmo genetico para distribuicao de insumos hospitalares.
 
-## Pessoa 1 - Dominio e fitness
+## O que foi implementado
 
-Esta parte do projeto implementa a base do problema para o TSP medico:
+O projeto ja possui a base do problema para o TSP medico:
 
 - catalogo de pontos de entrega, origem e abastecimento;
 - calculo de distancia por Haversine;
 - decoder de cromossomo para rota real com abastecimento automatico;
-- funcao de fitness para o algoritmo genetico consumir.
+- funcao de fitness para avaliar rotas;
+- testes automatizados para distancia, decoder e fitness;
+- demonstracao em script Python e notebook Jupyter.
 
-O algoritmo genetico completo nao esta implementado aqui. A Pessoa 2 pode usar a funcao `evaluate()` para avaliar individuos representados como `list[int]`.
+A estrutura atual entrega a funcao `evaluate()` para avaliar individuos representados como `list[int]`.
 
 ## Estrutura
 
@@ -30,7 +32,7 @@ tests/
   test_distance.py
   test_fitness.py
 notebooks/
-  demo_pessoa_1.ipynb
+  avaliacao_rotas_medicas.ipynb
 demo_pessoa_1.py
 requirements.txt
 ```
@@ -46,10 +48,10 @@ python -m pytest -q
 Para abrir a demonstracao em notebook:
 
 ```bash
-jupyter notebook notebooks/demo_pessoa_1.ipynb
+jupyter notebook notebooks/avaliacao_rotas_medicas.ipynb
 ```
 
-## Interface para a Pessoa 2
+## Como avaliar uma rota
 
 ```python
 from src.config import DEFAULT_CONFIG
@@ -68,3 +70,13 @@ print(result.decoded_route)
 ```
 
 O cromossomo deve conter apenas os indices das unidades hospitalares obrigatorias. A origem e as unidades de abastecimento sao inseridas automaticamente pelo decoder.
+
+## Regras consideradas
+
+- o veiculo parte do Hospital Central;
+- todos os hospitais do cromossomo sao visitados na ordem informada;
+- cada hospital possui demanda e prioridade;
+- quando a carga nao cobre a proxima entrega, o decoder insere o abastecimento mais proximo;
+- ao abastecer, a carga volta para a capacidade maxima;
+- a rota sempre retorna para a origem;
+- a fitness considera distancia total, penalidade de prioridade e penalidade de abastecimento.
