@@ -46,6 +46,17 @@ def test_decoder_restores_load_after_supply():
     assert decoded.remaining_load == 20
 
 
+def test_decoder_uses_vehicle_capacity_to_decide_resupply():
+    points = load_points("data/pontos_entrega.csv")
+    distance_matrix = build_distance_matrix(points)
+
+    decoded = decode_route([7, 10, 5], points, distance_matrix, DEFAULT_CONFIG)
+
+    assert decoded.resupply_count == 1
+    assert any(idx >= 100 for idx in decoded.route)
+    assert decoded.remaining_load == 65
+
+
 def test_decoder_does_not_insert_supply_when_load_is_enough():
     points = load_points("data/pontos_entrega.csv")
     distance_matrix = build_distance_matrix(points)

@@ -1,17 +1,17 @@
 import pytest
 
 from src.data_loader import load_points
-from src.distance import build_distance_matrix, get_distance, haversine_km
+from src.distance import build_distance_matrix, euclidean_distance, get_distance
 
 
-def test_haversine_returns_positive_distance_for_distinct_points():
-    distance = haversine_km(-23.5505, -46.6333, -23.5600, -46.6400)
+def test_euclidean_distance_returns_positive_distance_for_distinct_points():
+    distance = euclidean_distance(-23.5505, -46.6333, -23.5600, -46.6400)
 
     assert distance > 0
 
 
-def test_haversine_same_point_is_zero():
-    distance = haversine_km(-23.5505, -46.6333, -23.5505, -46.6333)
+def test_euclidean_distance_same_point_is_zero():
+    distance = euclidean_distance(-23.5505, -46.6333, -23.5505, -46.6333)
 
     assert distance == pytest.approx(0.0)
 

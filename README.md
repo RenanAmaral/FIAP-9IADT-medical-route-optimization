@@ -1,19 +1,31 @@
 # FIAP-9IADT-medical-route-optimization
 
-Otimizacao de rotas medicas usando algoritmo genetico para distribuicao de insumos hospitalares.
+Base de avaliacao de rotas medicas para distribuicao de insumos hospitalares.
 
 ## O que foi implementado
 
 O projeto ja possui a base do problema para o TSP medico:
 
 - catalogo de pontos de entrega, origem e abastecimento;
-- calculo de distancia por Haversine;
+- calculo de distancia euclidiana;
 - decoder de cromossomo para rota real com abastecimento automatico;
 - funcao de fitness para avaliar rotas;
 - testes automatizados para distancia, decoder e fitness;
 - demonstracao em script Python e notebook Jupyter.
 
-A estrutura atual entrega a funcao `evaluate()` para avaliar individuos representados como `list[int]`.
+A estrutura atual entrega a funcao `evaluate()` para avaliar cromossomos prontos representados como `list[int]`.
+
+## O que falta fazer
+
+Para completar o algoritmo genetico, ainda falta implementar:
+
+- geracao automatica de cromossomos;
+- criacao da populacao inicial;
+- selecao dos melhores individuos;
+- crossover entre rotas;
+- mutacao de cromossomos;
+- loop de evolucao por geracoes;
+- escolha e exibicao da melhor rota encontrada.
 
 ## Estrutura
 
@@ -33,7 +45,7 @@ tests/
   test_fitness.py
 notebooks/
   avaliacao_rotas_medicas.ipynb
-demo_pessoa_1.py
+demo_avaliacao_rotas.py
 requirements.txt
 ```
 
@@ -41,7 +53,7 @@ requirements.txt
 
 ```bash
 pip install -r requirements.txt
-python demo_pessoa_1.py
+python demo_avaliacao_rotas.py
 python -m pytest -q
 ```
 
@@ -76,7 +88,9 @@ O cromossomo deve conter apenas os indices das unidades hospitalares obrigatoria
 - o veiculo parte do Hospital Central;
 - todos os hospitais do cromossomo sao visitados na ordem informada;
 - cada hospital possui demanda e prioridade;
+- a carga inicial vem da configuracao `vehicle_capacity`;
 - quando a carga nao cobre a proxima entrega, o decoder insere o abastecimento mais proximo;
 - ao abastecer, a carga volta para a capacidade maxima;
 - a rota sempre retorna para a origem;
-- a fitness considera distancia total, penalidade de prioridade e penalidade de abastecimento.
+- a fitness considera distancia total, penalidade de prioridade e penalidade de abastecimento;
+- a penalidade de abastecimento acompanha a quantidade de reabastecimentos realizados.

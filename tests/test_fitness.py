@@ -36,6 +36,16 @@ def test_more_resupplies_has_greater_supply_penalty():
     assert more_resupplies.supply_penalty > fewer_resupplies.supply_penalty
 
 
+def test_supply_penalty_matches_resupply_count():
+    points = load_points("data/pontos_entrega.csv")
+    distance_matrix = build_distance_matrix(points)
+
+    result = evaluate([7, 10, 5], points, distance_matrix, DEFAULT_CONFIG)
+
+    assert result.resupply_count == 1
+    assert result.supply_penalty == float(result.resupply_count)
+
+
 def test_evaluation_result_contains_expected_fields():
     points = load_points("data/pontos_entrega.csv")
     distance_matrix = build_distance_matrix(points)

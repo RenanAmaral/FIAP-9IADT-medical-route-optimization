@@ -1,32 +1,21 @@
-from math import asin, cos, radians, sin, sqrt
+from math import sqrt
 from typing import Dict, List, Tuple
 
 from src.models import Point
 
 
 DistanceMatrix = Dict[Tuple[int, int], float]
-EARTH_RADIUS_KM = 6371.0
 
 
-def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    lat1_rad = radians(lat1)
-    lon1_rad = radians(lon1)
-    lat2_rad = radians(lat2)
-    lon2_rad = radians(lon2)
-
-    delta_lat = lat2_rad - lat1_rad
-    delta_lon = lon2_rad - lon1_rad
-
-    a = sin(delta_lat / 2) ** 2 + cos(lat1_rad) * cos(lat2_rad) * sin(delta_lon / 2) ** 2
-    c = 2 * asin(sqrt(a))
-    return EARTH_RADIUS_KM * c
+def euclidean_distance(x1: float, y1: float, x2: float, y2: float) -> float:
+    return sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
 
 def build_distance_matrix(points: List[Point]) -> DistanceMatrix:
     distance_matrix: DistanceMatrix = {}
     for origin in points:
         for destination in points:
-            distance_matrix[(origin.idx, destination.idx)] = haversine_km(
+            distance_matrix[(origin.idx, destination.idx)] = euclidean_distance(
                 origin.lat,
                 origin.lon,
                 destination.lat,

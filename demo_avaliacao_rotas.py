@@ -13,7 +13,7 @@ def main() -> None:
 
     print(f"Cromossomo original: {result.chromosome}")
     print(f"Rota decodificada: {result.decoded_route}")
-    print(f"Distancia total: {result.total_distance:.2f} km")
+    print(f"Distancia total: {result.total_distance:.4f}")
     print(f"Penalidade de prioridade: {result.priority_penalty:.2f}")
     print(f"Penalidade de abastecimento: {result.supply_penalty:.2f}")
     print(f"Fitness final: {result.fitness:.2f}")
