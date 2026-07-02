@@ -40,8 +40,30 @@ class EvaluationResult:
     errors: List[str]
 
 
+@dataclass
+class GenerationRecord:
+    generation: int
+    best_fitness: float
+    best_distance: float
+    average_fitness: float
+
+
+@dataclass
+class EvolutionResult:
+    best: EvaluationResult
+    history: List[GenerationRecord]
+    generations: int
+
+
 @dataclass(frozen=True)
 class Config:
     vehicle_capacity: int
     lambda_priority: float
     lambda_supply: float
+    pop_size: int = 100
+    generations: int = 200
+    mutation_rate: float = 0.1
+    crossover_rate: float = 0.9
+    tournament_size: int = 3
+    n_elite: int = 2
+    seed: Optional[int] = None
