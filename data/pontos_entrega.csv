@@ -1,17 +1,33 @@
 idx,type,name,lat,lon,priority,demand
-0,origin,Hospital Central,-23.5505,-46.6333,,0
-1,hospital,Unidade Hospitalar A,-23.5600,-46.6400,ALTA,30
-2,hospital,Unidade Hospitalar B,-23.5700,-46.6200,MEDIA,20
-3,hospital,Unidade Hospitalar C,-23.5300,-46.6100,BAIXA,10
-4,hospital,Unidade Hospitalar D,-23.5450,-46.6600,ALTA,25
-5,hospital,Unidade Hospitalar E,-23.5900,-46.6300,MEDIA,35
-6,hospital,Unidade Hospitalar F,-23.5150,-46.6450,BAIXA,15
-7,hospital,Unidade Hospitalar G,-23.5750,-46.6750,ALTA,40
-8,hospital,Unidade Hospitalar H,-23.6000,-46.6000,MEDIA,20
-9,hospital,Unidade Hospitalar I,-23.5250,-46.5850,BAIXA,15
-10,hospital,Unidade Hospitalar J,-23.6100,-46.6550,ALTA,30
-11,hospital,Unidade Hospitalar K,-23.5050,-46.6250,MEDIA,25
-12,hospital,Unidade Hospitalar L,-23.5850,-46.5900,BAIXA,10
-100,supply,Abastecimento Norte,-23.5200,-46.6300,,0
-101,supply,Abastecimento Sul,-23.5950,-46.6500,,0
-102,supply,Abastecimento Leste,-23.5500,-46.5850,,0
+0,origin,Hospital Central - Brasilia,-15.7939,-47.8828,,0
+1,hospital,Hospital Sao Paulo,-23.5505,-46.6333,ALTA,40
+2,hospital,Hospital Rio de Janeiro,-22.9068,-43.1729,ALTA,35
+3,hospital,Hospital Belo Horizonte,-19.9167,-43.9345,MEDIA,25
+4,hospital,Hospital Salvador,-12.9714,-38.5014,ALTA,30
+5,hospital,Hospital Fortaleza,-3.7319,-38.5267,MEDIA,20
+6,hospital,Hospital Recife,-8.0476,-34.8770,ALTA,30
+7,hospital,Hospital Porto Alegre,-30.0346,-51.2177,MEDIA,25
+8,hospital,Hospital Curitiba,-25.4284,-49.2733,BAIXA,15
+9,hospital,Hospital Manaus,-3.1190,-60.0217,ALTA,35
+10,hospital,Hospital Belem,-1.4558,-48.5044,MEDIA,20
+11,hospital,Hospital Goiania,-16.6869,-49.2648,BAIXA,15
+12,hospital,Hospital Campinas,-22.9099,-47.0626,MEDIA,20
+13,hospital,Hospital Sao Luis,-2.5307,-44.3068,BAIXA,15
+14,hospital,Hospital Maceio,-9.6498,-35.7089,MEDIA,20
+15,hospital,Hospital Natal,-5.7945,-35.2110,BAIXA,15
+16,hospital,Hospital Campo Grande,-20.4697,-54.6201,MEDIA,25
+17,hospital,Hospital Teresina,-5.0892,-42.8019,BAIXA,10
+18,hospital,Hospital Joao Pessoa,-7.1195,-34.8450,MEDIA,20
+19,hospital,Hospital Cuiaba,-15.6014,-56.0979,ALTA,30
+20,hospital,Hospital Aracaju,-10.9472,-37.0731,BAIXA,15
+21,hospital,Hospital Florianopolis,-27.5954,-48.5480,MEDIA,20
+22,hospital,Hospital Vitoria,-20.3155,-40.3128,BAIXA,15
+23,hospital,Hospital Porto Velho,-8.7619,-63.9039,ALTA,30
+24,hospital,Hospital Palmas,-10.1841,-48.3336,BAIXA,10
+25,hospital,Hospital Boa Vista,2.8235,-60.6758,ALTA,35
+100,supply,Abastecimento Uberlandia,-18.9186,-48.2772,,0
+101,supply,Abastecimento Petrolina,-9.3891,-40.5030,,0
+102,supply,Abastecimento Santarem,-2.4431,-54.6989,,0
+103,supply,Abastecimento Cascavel,-24.9555,-53.4552,,0
+104,supply,Abastecimento Rondonopolis,-16.4706,-54.6356,,0
+105,supply,Abastecimento Feira de Santana,-12.2664,-38.9663,,0

@@ -53,9 +53,11 @@ do fitness**, mantendo o cromossomo simples. Assim os operadores geneticos class
 | Populacao | `list[list[int]]` | — | — | selecao / elitismo |
 | Rota (fenotipo) | `list[int]` | sim | sim (inserido) | decoder no fitness |
 
-O catalogo tem 12 hospitais + 1 origem + 3 estacoes de abastecimento (16 pontos),
-gerado em [data/pontos_entrega.csv](../data/pontos_entrega.csv) e calibrado para
-forcar ~2 a 3 reabastecimentos.
+O catalogo tem **25 hospitais + 1 origem + 6 estacoes de abastecimento (32 pontos)** em
+**cidades reais do Brasil** (capitais e grandes cidades), com a origem em Brasilia
+([data/pontos_entrega.csv](../data/pontos_entrega.csv)). As distancias Haversine ficam em
+km reais (centenas a milhares de km), e a demanda total (~570) contra a capacidade de 100
+forca **6 reabastecimentos**, tornando o problema realista.
 
 ## 3. Algoritmo genetico
 
@@ -92,38 +94,51 @@ Experimentos com seed fixa (42), comparando aleatoria × nearest neighbor × GA
 
 | Exp | Config (pop/ger/mut) | Metodo | Dist (km) | Reab | PosCrit | Fitness |
 |-----|----------------------|--------|-----------|------|---------|---------|
-| E1 | 50 / 100 / 5% | Aleatoria | 94,94 | 3 | 7,25 | 969,94 |
-| E1 | | Nearest neighbor | 52,04 | 2 | 8,50 | 887,04 |
-| E1 | | **Algoritmo genetico** | 60,03 | 2 | **2,50** | **700,03** |
-| E2 | 100 / 200 / 10% | **Algoritmo genetico** | 56,55 | 2 | **2,50** | **696,55** |
-| E3 | 200 / 300 / 15% | **Algoritmo genetico** | 56,16 | 2 | **2,50** | **696,16** |
+| E1 | 50 / 100 / 5% | Aleatoria | 49 826 | 6 | 16,12 | 53 391 |
+| E1 | | Nearest neighbor | 22 028 | 6 | 16,00 | 25 473 |
+| E1 | | **Algoritmo genetico** | 19 450 | 6 | 16,62 | 22 855 |
+| E2 | 100 / 200 / 10% | **Algoritmo genetico** | 17 015 | 6 | **11,62** | **20 310** |
+| E3 | 200 / 300 / 15% | **Algoritmo genetico** | 17 359 | 6 | 11,00 | 20 604 |
 
-`PosCrit` = posicao media de visita dos hospitais ALTA (menor = atendidos mais cedo).
+`PosCrit` = posicao media de visita dos hospitais ALTA (menor = atendidos mais cedo);
+ha 8 hospitais ALTA entre os 25. Tempo do E3 ~3,5s (vs 0,3s do E1).
 
 ### Leitura dos resultados
 
-- **Ganho do GA**: ~28% em fitness vs rota aleatoria e ~21% vs nearest neighbor.
-- **Prioridade funciona**: os baselines atendem os hospitais ALTA nas posicoes medias
-  7,25 e 8,50 (tarde); o GA os coloca em **2,50** — os 4 hospitais urgentes sao
-  atendidos essencialmente primeiro. E a prova numerica de que a `penalidade_prioridade`
-  cumpre seu papel.
-- **Trade-off correto**: o GA aceita distancia ligeiramente maior que o nearest
-  neighbor (56,5 vs 52,0 km) em troca de fitness bem menor — trocou distancia por
-  atender urgencias cedo, exatamente o comportamento desejado.
-- **Retorno decrescente**: E2 e E3 convergem para praticamente a mesma solucao
-  (696,55 vs 696,16), mas E3 leva ~4x mais tempo. E2 e o melhor custo-beneficio.
+- **Ganho do GA**: ~62% em fitness vs rota aleatoria e ~20% vs nearest neighbor (E2).
+- **Prioridade funciona**: os baselines atendem os hospitais ALTA na posicao media ~16
+  (tarde, pois varias cidades ALTA sao distantes — Manaus, Boa Vista, Porto Velho); o GA
+  (E2/E3) puxa essa media para **~11**, atendendo as urgencias mais cedo mesmo pagando
+  distancia. E a prova de que a `penalidade_prioridade` cumpre seu papel na escala nacional.
+- **Efeito das geracoes**: o E1 (pequeno) prioriza distancia e quase nao melhora a
+  `PosCrit` (16,62); com mais geracoes (E2/E3) o GA equilibra distancia e prioridade.
+- **Retorno decrescente / ruido**: E3 (mut 15%) nao supera o E2 (17 359 vs 17 015 km) —
+  a mutacao alta explora mais mas atrapalha a convergencia no numero fixo de geracoes.
+  **E2 e o melhor custo-beneficio.**
 
-A melhor rota (E2):
-`[0, 1, 4, 7, 101, 10, 8, 5, 101, 2, 11, 6, 3, 9, 12, 0]` — 56,55 km, 2 reabastecimentos.
+A melhor rota (E2) parte de Brasilia, cobre as 25 cidades com 6 reabastecimentos e
+percorre **17 015 km**. Ela e plotada sobre o **mapa do Brasil** por `plot_route_map`.
 
-## 6. Relatorio via LLM
+## 6. Integracao com LLM
 
 O modulo [src/llm_report.py](../src/llm_report.py) serializa o resultado em um payload
-limpo e gera um relatorio em linguagem natural. Ha dois caminhos:
+limpo e usa uma LLM para quatro finalidades (item 3 do desafio):
 
-- **template deterministico** (padrao, offline, sem chave);
-- **LLM (Claude)** opcional, com controle de alucinacao no system prompt (usa apenas
-  os dados do payload; nao decide nem altera a rota).
+1. **Relatorio da rota** — `generate_report` (tambem tem um template deterministico
+   offline, usado como padrao/fallback sem chave);
+2. **Instrucoes para o motorista** e a equipe de entrega — `generate_driver_instructions`;
+3. **Relatorio de eficiencia** comparando os metodos ao longo dos experimentos
+   (economia de distancia/tempo/recursos e ganho percentual) — `generate_efficiency_report`;
+4. **Sugestoes de melhoria** no processo — `suggest_improvements`;
+5. **Perguntas em linguagem natural** sobre a rota (Q&A) — `answer_question`.
+
+Todas compartilham um nucleo (`_call_llm`) e o mesmo **system prompt com controle de
+alucinacao**: a LLM usa apenas os dados fornecidos e nao decide nem altera a rota.
+
+- **Provider padrao**: **Google Gemini** (free tier), com alternativa Anthropic Claude
+  (`provider="anthropic"`).
+- **Prompts eficientes**: cada tarefa monta um prompt especifico (`build_*_prompt`) sobre
+  o payload JSON, pedindo exatamente o formato de saida desejado.
 
 ## 7. Como reproduzir
 
@@ -136,12 +151,13 @@ jupyter notebook notebooks/otimizacao_rotas_medicas.ipynb   # pipeline ponta a p
 
 ## 8. Checklist do desafio
 
-- [x] Dataset simulado com 10–15 pontos — **obrigatorio**
-- [x] Calculo de distancia entre pontos (Haversine) — **obrigatorio**
+- [x] Dataset com cidades reais do Brasil (25 hospitais + origem + 6 abastecimentos) — **obrigatorio**
+- [x] Calculo de distancia entre pontos (Haversine, km reais) — **obrigatorio**
 - [x] Algoritmo genetico para TSP — **obrigatorio**
 - [x] Fitness com distancia e prioridade — **obrigatorio**
 - [x] Selecao, crossover e mutacao — **obrigatorio**
 - [x] Comparacao com baseline (aleatoria e nearest neighbor) — **obrigatorio**
-- [x] Grafico de convergencia e mapa da rota — **obrigatorio**
-- [x] LLM gerando relatorio em linguagem natural — **obrigatorio**
+- [x] Grafico de convergencia e mapa da rota sobre o mapa do Brasil — **obrigatorio**
+- [x] LLM gerando relatorio, instrucoes ao motorista, relatorio de eficiencia,
+  sugestoes de melhoria e Q&A em linguagem natural — **obrigatorio**
 - [x] Capacidade / reabastecimento — *opcional* (contemplado pelo decoder)

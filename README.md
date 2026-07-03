@@ -1,9 +1,10 @@
 # FIAP-9IADT-medical-route-optimization
 
 Otimizacao da rota de um veiculo de distribuicao de insumos medicos (TSP medico)
-com **algoritmo genetico**. O veiculo parte de um hospital central, visita todas as
-unidades hospitalares respeitando a ordem de prioridade das entregas (ALTA > MEDIA >
-BAIXA) e reabastece em estacoes quando a carga acaba.
+com **algoritmo genetico**, em **cidades reais do Brasil**. O veiculo parte de Brasilia,
+visita 25 hospitais em capitais/grandes cidades respeitando a ordem de prioridade das
+entregas (ALTA > MEDIA > BAIXA) e reabastece em estacoes quando a carga acaba. A rota
+final e plotada sobre o **mapa do Brasil**.
 
 ## O que foi implementado
 
@@ -16,29 +17,32 @@ BAIXA) e reabastece em estacoes quando a carga acaba.
 - **baselines** (rota aleatoria e nearest neighbor) para comparacao justa;
 - **experimentos** E1/E2/E3 com tabela comparativa e metricas;
 - **visualizacao**: curva de convergencia e mapa da rota;
-- **relatorio** em linguagem natural (template deterministico + LLM opcional);
-- **61 testes** automatizados;
+- **integracao com LLM** (Gemini por padrao): relatorio, instrucoes ao motorista,
+  relatorio de eficiencia, sugestoes de melhoria e perguntas em linguagem natural (Q&A);
+- **67 testes** automatizados;
 - notebook demonstrativo ponta a ponta.
 
 Relatorio tecnico completo em [docs/relatorio_tecnico.md](docs/relatorio_tecnico.md).
 
-## Resultados (seed=42)
+## Resultados (seed=42, 25 hospitais em cidades reais)
 
 | Metodo | Distancia (km) | Reab | PosCrit | Fitness |
 |--------|----------------|------|---------|---------|
-| Rota aleatoria | 94,94 | 3 | 7,25 | 969,94 |
-| Nearest neighbor | 52,04 | 2 | 8,50 | 887,04 |
-| **Algoritmo genetico** (E2) | 56,55 | 2 | **2,50** | **696,55** |
+| Rota aleatoria | 49 826 | 6 | 16,12 | 53 391 |
+| Nearest neighbor | 22 028 | 6 | 16,00 | 25 473 |
+| **Algoritmo genetico** (E2) | 17 015 | 6 | **11,62** | **20 310** |
 
-`PosCrit` = posicao media de visita dos hospitais ALTA (menor = atendidos mais cedo).
-O GA ganha ~28% em fitness vs aleatoria e ~21% vs nearest neighbor, atendendo os
-hospitais urgentes essencialmente primeiro (posicao 2,5 vs 7–8 dos baselines).
+`PosCrit` = posicao media de visita dos 8 hospitais ALTA (menor = atendidos mais cedo).
+O GA ganha ~62% em fitness vs aleatoria e ~20% vs nearest neighbor, e atende os
+hospitais urgentes mais cedo (posicao media ~11 vs ~16 dos baselines) mesmo em escala
+nacional, onde varias cidades ALTA sao distantes.
 
 ## Estrutura
 
 ```text
 data/
-  pontos_entrega.csv
+  pontos_entrega.csv       # 25 hospitais + origem + 6 abastecimentos (cidades reais)
+  brasil_estados.geojson   # contorno dos estados para o mapa
 src/
   config.py            # parametros centralizados
   data_loader.py       # catalogo + validacao
@@ -111,19 +115,39 @@ print(result.fitness, result.decoded_route)
 
 ## Relatorio via LLM (opcional)
 
-O relatorio deterministico funciona offline. Para gerar via Claude:
+O relatorio deterministico funciona offline. Para gerar via LLM, o provider padrao e o
+**Google Gemini** (free tier). Crie a chave em https://aistudio.google.com e defina:
 
 ```bash
-pip install anthropic          # ja incluso no requirements
-export ANTHROPIC_API_KEY=...   # sua chave
+pip install google-genai       # ja incluso no requirements
+# Windows PowerShell:
+$env:GEMINI_API_KEY = "sua-chave"
 ```
 
+A mesma integracao cobre os quatro usos do item 3 do desafio:
+
 ```python
-from src.llm_report import build_route_payload, generate_report
+from src.llm_report import (
+    build_route_payload, generate_report, generate_driver_instructions,
+    answer_question, suggest_improvements,
+    build_efficiency_payload, generate_efficiency_report,
+)
 
 payload = build_route_payload(best, points, config)
-print(generate_report(payload))                 # template deterministico
-print(generate_report(payload, use_llm=True))   # via LLM (requer chave)
+
+print(generate_report(payload))                       # template deterministico (offline)
+print(generate_report(payload, use_llm=True))         # relatorio via Gemini
+print(generate_driver_instructions(payload))          # instrucoes para o motorista
+print(answer_question(payload, "Quantos reabastecimentos?"))  # Q&A em linguagem natural
+print(suggest_improvements(payload))                  # sugestoes de melhoria
+
+# relatorio de eficiencia usa os experimentos:
+from src.experiments import run_all_experiments
+resultados = run_all_experiments(points, distance_matrix, config)
+print(generate_efficiency_report(build_efficiency_payload(resultados)))
+
+# provider alternativo:
+print(generate_report(payload, use_llm=True, provider="anthropic"))  # Claude (ANTHROPIC_API_KEY)
 ```
 
 ## Regras consideradas
