@@ -30,8 +30,8 @@ def test_more_resupplies_has_greater_supply_penalty():
     distance_matrix = build_distance_matrix(points)
     low_capacity = Config(vehicle_capacity=50, lambda_priority=5.0, lambda_supply=10.0)
 
-    fewer_resupplies = evaluate([7], points, distance_matrix, low_capacity)
-    more_resupplies = evaluate([7, 10], points, distance_matrix, low_capacity)
+    fewer_resupplies = evaluate([1], points, distance_matrix, low_capacity)
+    more_resupplies = evaluate([1, 2], points, distance_matrix, low_capacity)
 
     assert more_resupplies.supply_penalty > fewer_resupplies.supply_penalty
 
@@ -40,7 +40,7 @@ def test_supply_penalty_matches_resupply_count():
     points = load_points("data/pontos_entrega.csv")
     distance_matrix = build_distance_matrix(points)
 
-    result = evaluate([7, 10, 5], points, distance_matrix, DEFAULT_CONFIG)
+    result = evaluate([1, 2, 4], points, distance_matrix, DEFAULT_CONFIG)
 
     assert result.resupply_count == 1
     assert result.supply_penalty == float(result.resupply_count)

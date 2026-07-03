@@ -1,9 +1,10 @@
 # FIAP-9IADT-medical-route-optimization
 
 Otimizacao da rota de um veiculo de distribuicao de insumos medicos (TSP medico)
-com **algoritmo genetico**. O veiculo parte de um hospital central, visita todas as
-unidades hospitalares respeitando a ordem de prioridade das entregas (ALTA > MEDIA >
-BAIXA) e reabastece em estacoes quando a carga acaba.
+com **algoritmo genetico**, em **cidades reais do Brasil**. O veiculo parte de Brasilia,
+visita 25 hospitais em capitais/grandes cidades respeitando a ordem de prioridade das
+entregas (ALTA > MEDIA > BAIXA) e reabastece em estacoes quando a carga acaba. A rota
+final e plotada sobre o **mapa do Brasil**.
 
 ## O que foi implementado
 
@@ -23,23 +24,25 @@ BAIXA) e reabastece em estacoes quando a carga acaba.
 
 Relatorio tecnico completo em [docs/relatorio_tecnico.md](docs/relatorio_tecnico.md).
 
-## Resultados (seed=42)
+## Resultados (seed=42, 25 hospitais em cidades reais)
 
 | Metodo | Distancia (km) | Reab | PosCrit | Fitness |
 |--------|----------------|------|---------|---------|
-| Rota aleatoria | 94,94 | 3 | 7,25 | 969,94 |
-| Nearest neighbor | 52,04 | 2 | 8,50 | 887,04 |
-| **Algoritmo genetico** (E2) | 56,55 | 2 | **2,50** | **696,55** |
+| Rota aleatoria | 49 826 | 6 | 16,12 | 53 391 |
+| Nearest neighbor | 22 028 | 6 | 16,00 | 25 473 |
+| **Algoritmo genetico** (E2) | 17 015 | 6 | **11,62** | **20 310** |
 
-`PosCrit` = posicao media de visita dos hospitais ALTA (menor = atendidos mais cedo).
-O GA ganha ~28% em fitness vs aleatoria e ~21% vs nearest neighbor, atendendo os
-hospitais urgentes essencialmente primeiro (posicao 2,5 vs 7–8 dos baselines).
+`PosCrit` = posicao media de visita dos 8 hospitais ALTA (menor = atendidos mais cedo).
+O GA ganha ~62% em fitness vs aleatoria e ~20% vs nearest neighbor, e atende os
+hospitais urgentes mais cedo (posicao media ~11 vs ~16 dos baselines) mesmo em escala
+nacional, onde varias cidades ALTA sao distantes.
 
 ## Estrutura
 
 ```text
 data/
-  pontos_entrega.csv
+  pontos_entrega.csv       # 25 hospitais + origem + 6 abastecimentos (cidades reais)
+  brasil_estados.geojson   # contorno dos estados para o mapa
 src/
   config.py            # parametros centralizados
   data_loader.py       # catalogo + validacao

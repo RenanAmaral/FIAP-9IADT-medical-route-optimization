@@ -62,8 +62,11 @@ def test_initial_population_can_seed_nearest_neighbor():
         seed_nearest_neighbor=True,
     )
 
+    hospital_ids = [hospital.idx for hospital in get_hospitals(points)]
+    closest_to_origin = min(hospital_ids, key=lambda idx: distance_matrix[(0, idx)])
+
     assert len(population) == 10
-    assert population[0][0] == 1  # hospital mais proximo da origem
+    assert population[0][0] == closest_to_origin  # NN comeca pelo hospital mais proximo da origem
 
 
 def test_tournament_selection_returns_best_when_everyone_competes():

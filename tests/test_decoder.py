@@ -30,7 +30,8 @@ def test_decoder_inserts_supply_when_load_is_not_enough():
     distance_matrix = build_distance_matrix(points)
     config = Config(vehicle_capacity=50, lambda_priority=5.0, lambda_supply=10.0)
 
-    decoded = decode_route([7, 10], points, distance_matrix, config)
+    # hospital 1 (demanda 40) e 2 (demanda 35): apos o 1 sobram 10, insere abastecimento
+    decoded = decode_route([1, 2], points, distance_matrix, config)
 
     assert decoded.resupply_count == 1
     assert any(idx >= 100 for idx in decoded.route)
@@ -41,20 +42,22 @@ def test_decoder_restores_load_after_supply():
     distance_matrix = build_distance_matrix(points)
     config = Config(vehicle_capacity=50, lambda_priority=5.0, lambda_supply=10.0)
 
-    decoded = decode_route([7, 10], points, distance_matrix, config)
+    # apos reabastecer (carga volta a 50) e entregar a demanda 35 do hospital 2, sobram 15
+    decoded = decode_route([1, 2], points, distance_matrix, config)
 
-    assert decoded.remaining_load == 20
+    assert decoded.remaining_load == 15
 
 
 def test_decoder_uses_vehicle_capacity_to_decide_resupply():
     points = load_points("data/pontos_entrega.csv")
     distance_matrix = build_distance_matrix(points)
 
-    decoded = decode_route([7, 10, 5], points, distance_matrix, DEFAULT_CONFIG)
+    # capacidade 100: 1(40)+2(35)=75; o hospital 4 (30) nao cabe nos 25 restantes -> abastece
+    decoded = decode_route([1, 2, 4], points, distance_matrix, DEFAULT_CONFIG)
 
     assert decoded.resupply_count == 1
     assert any(idx >= 100 for idx in decoded.route)
-    assert decoded.remaining_load == 65
+    assert decoded.remaining_load == 70
 
 
 def test_decoder_does_not_insert_supply_when_load_is_enough():

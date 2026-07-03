@@ -34,7 +34,7 @@ def test_default_experiments_match_pdf_specs():
 def test_average_critical_position_counts_only_alta_hospitals():
     points, _ = load_scenario()
 
-    # hospitais ALTA: 1, 4, 7, 10. No cromossomo [3, 1, 5, 4] estao nas posicoes 2 e 4.
+    # hospitais 1 e 4 sao ALTA. No cromossomo [3, 1, 5, 4] estao nas posicoes 2 e 4.
     position = average_critical_position([3, 1, 5, 4], points)
 
     assert position == (2 + 4) / 2
@@ -43,8 +43,8 @@ def test_average_critical_position_counts_only_alta_hospitals():
 def test_average_critical_position_is_zero_without_alta():
     points, _ = load_scenario()
 
-    # 3 (BAIXA), 2 (MEDIA), 6 (BAIXA): nenhum ALTA
-    assert average_critical_position([3, 2, 6], points) == 0.0
+    # 3 (MEDIA), 5 (MEDIA), 8 (BAIXA): nenhum ALTA
+    assert average_critical_position([3, 5, 8], points) == 0.0
 
 
 def test_run_experiment_collects_all_metrics():
