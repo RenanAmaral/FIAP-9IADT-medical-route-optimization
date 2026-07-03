@@ -2,5 +2,7 @@ pytest>=8.0.0
 notebook>=7.0.0
 matplotlib>=3.8.0
 # Opcional: apenas para o relatorio via LLM (generate_report(use_llm=True)).
-# O relatorio deterministico funciona sem este pacote.
-anthropic>=0.40.0
+# O relatorio deterministico funciona sem estes pacotes.
+google-genai>=1.0.0        # provider padrao (Gemini, free tier)
+anthropic>=0.40.0          # provider alternativo (Claude)
+python-dotenv>=1.0.0       # carrega a chave do arquivo .env no notebook

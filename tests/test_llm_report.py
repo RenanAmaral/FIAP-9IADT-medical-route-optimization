@@ -4,13 +4,22 @@ from src.config import DEFAULT_CONFIG
 from src.data_loader import load_points
 from src.distance import build_distance_matrix
 from src.fitness import evaluate
+from types import SimpleNamespace
+
+from src.experiments import ExperimentSpec, run_all_experiments
 from src.llm_report import (
-    DEFAULT_MODEL,
+    DEFAULT_ANTHROPIC_MODEL,
+    DEFAULT_GEMINI_MODEL,
     SYSTEM_PROMPT,
+    answer_question,
+    build_efficiency_payload,
     build_prompt,
     build_route_payload,
+    generate_driver_instructions,
+    generate_efficiency_report,
     generate_report,
     render_template_report,
+    suggest_improvements,
 )
 
 
@@ -32,7 +41,7 @@ class FakeMessage:
         self.content = [FakeTextBlock(text)]
 
 
-class FakeClient:
+class FakeAnthropicClient:
     """Cliente Anthropic falso para testar o caminho LLM sem rede nem chave."""
 
     def __init__(self):
@@ -42,6 +51,18 @@ class FakeClient:
     def create(self, **kwargs):
         self.calls.append(kwargs)
         return FakeMessage("Relatorio gerado pela LLM.")
+
+
+class FakeGeminiClient:
+    """Cliente Gemini falso (espelha client.models.generate_content)."""
+
+    def __init__(self):
+        self.calls = []
+        self.models = self
+
+    def generate_content(self, **kwargs):
+        self.calls.append(kwargs)
+        return SimpleNamespace(text="Relatorio gerado pelo Gemini.")
 
 
 def test_payload_has_expected_fields():
@@ -104,14 +125,89 @@ def test_generate_report_defaults_to_template_without_llm():
     assert report == render_template_report(payload)
 
 
-def test_generate_report_uses_injected_client_when_llm_enabled():
+def test_gemini_is_the_default_llm_provider():
     result, points, config = build_scenario()
     payload = build_route_payload(result, points, config)
-    fake = FakeClient()
+    fake = FakeGeminiClient()
 
     report = generate_report(payload, use_llm=True, client=fake)
 
+    assert report == "Relatorio gerado pelo Gemini."
+    assert fake.calls[0]["model"] == DEFAULT_GEMINI_MODEL
+    assert fake.calls[0]["config"]["system_instruction"] == SYSTEM_PROMPT
+    assert str(payload["total_distance_km"]) in fake.calls[0]["contents"]
+
+
+def test_anthropic_provider_uses_messages_api():
+    result, points, config = build_scenario()
+    payload = build_route_payload(result, points, config)
+    fake = FakeAnthropicClient()
+
+    report = generate_report(payload, use_llm=True, provider="anthropic", client=fake)
+
     assert report == "Relatorio gerado pela LLM."
-    assert fake.calls[0]["model"] == DEFAULT_MODEL
+    assert fake.calls[0]["model"] == DEFAULT_ANTHROPIC_MODEL
     assert fake.calls[0]["system"] == SYSTEM_PROMPT
     assert str(payload["total_distance_km"]) in fake.calls[0]["messages"][0]["content"]
+
+
+def test_unknown_provider_raises():
+    result, points, config = build_scenario()
+    payload = build_route_payload(result, points, config)
+
+    try:
+        generate_report(payload, use_llm=True, provider="openai")
+        raised = False
+    except ValueError:
+        raised = True
+    assert raised
+
+
+def test_driver_instructions_prompt_mentions_driver_and_route():
+    result, points, config = build_scenario()
+    payload = build_route_payload(result, points, config)
+    fake = FakeGeminiClient()
+
+    text = generate_driver_instructions(payload, client=fake)
+
+    assert text == "Relatorio gerado pelo Gemini."
+    contents = fake.calls[0]["contents"]
+    assert "motorista" in contents.lower()
+    assert str(payload["total_distance_km"]) in contents
+
+
+def test_answer_question_includes_the_question():
+    result, points, config = build_scenario()
+    payload = build_route_payload(result, points, config)
+    fake = FakeGeminiClient()
+
+    answer_question(payload, "Quantos reabastecimentos foram feitos?", client=fake)
+
+    assert "Quantos reabastecimentos foram feitos?" in fake.calls[0]["contents"]
+
+
+def test_suggest_improvements_calls_llm():
+    result, points, config = build_scenario()
+    payload = build_route_payload(result, points, config)
+    fake = FakeGeminiClient()
+
+    text = suggest_improvements(payload, client=fake)
+
+    assert text == "Relatorio gerado pelo Gemini."
+    assert "melhoria" in fake.calls[0]["contents"].lower()
+
+
+def test_efficiency_payload_and_report():
+    points = load_points("data/pontos_entrega.csv")
+    distance_matrix = build_distance_matrix(points)
+    specs = [ExperimentSpec("T1", pop_size=20, generations=8, mutation_rate=0.1)]
+    results = run_all_experiments(points, distance_matrix, DEFAULT_CONFIG, specs=specs)
+
+    efficiency = build_efficiency_payload(results)
+    assert efficiency["experimentos"][0]["experimento"] == "T1"
+    assert "ganho_vs_nearest_pct" in efficiency["experimentos"][0]
+
+    fake = FakeGeminiClient()
+    text = generate_efficiency_report(efficiency, client=fake)
+    assert text == "Relatorio gerado pelo Gemini."
+    assert "eficiencia" in fake.calls[0]["contents"].lower()

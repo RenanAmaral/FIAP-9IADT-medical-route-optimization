@@ -116,14 +116,26 @@ Experimentos com seed fixa (42), comparando aleatoria × nearest neighbor × GA
 A melhor rota (E2):
 `[0, 1, 4, 7, 101, 10, 8, 5, 101, 2, 11, 6, 3, 9, 12, 0]` — 56,55 km, 2 reabastecimentos.
 
-## 6. Relatorio via LLM
+## 6. Integracao com LLM
 
 O modulo [src/llm_report.py](../src/llm_report.py) serializa o resultado em um payload
-limpo e gera um relatorio em linguagem natural. Ha dois caminhos:
+limpo e usa uma LLM para quatro finalidades (item 3 do desafio):
 
-- **template deterministico** (padrao, offline, sem chave);
-- **LLM (Claude)** opcional, com controle de alucinacao no system prompt (usa apenas
-  os dados do payload; nao decide nem altera a rota).
+1. **Relatorio da rota** — `generate_report` (tambem tem um template deterministico
+   offline, usado como padrao/fallback sem chave);
+2. **Instrucoes para o motorista** e a equipe de entrega — `generate_driver_instructions`;
+3. **Relatorio de eficiencia** comparando os metodos ao longo dos experimentos
+   (economia de distancia/tempo/recursos e ganho percentual) — `generate_efficiency_report`;
+4. **Sugestoes de melhoria** no processo — `suggest_improvements`;
+5. **Perguntas em linguagem natural** sobre a rota (Q&A) — `answer_question`.
+
+Todas compartilham um nucleo (`_call_llm`) e o mesmo **system prompt com controle de
+alucinacao**: a LLM usa apenas os dados fornecidos e nao decide nem altera a rota.
+
+- **Provider padrao**: **Google Gemini** (free tier), com alternativa Anthropic Claude
+  (`provider="anthropic"`).
+- **Prompts eficientes**: cada tarefa monta um prompt especifico (`build_*_prompt`) sobre
+  o payload JSON, pedindo exatamente o formato de saida desejado.
 
 ## 7. Como reproduzir
 
@@ -143,5 +155,6 @@ jupyter notebook notebooks/otimizacao_rotas_medicas.ipynb   # pipeline ponta a p
 - [x] Selecao, crossover e mutacao — **obrigatorio**
 - [x] Comparacao com baseline (aleatoria e nearest neighbor) — **obrigatorio**
 - [x] Grafico de convergencia e mapa da rota — **obrigatorio**
-- [x] LLM gerando relatorio em linguagem natural — **obrigatorio**
+- [x] LLM gerando relatorio, instrucoes ao motorista, relatorio de eficiencia,
+  sugestoes de melhoria e Q&A em linguagem natural — **obrigatorio**
 - [x] Capacidade / reabastecimento — *opcional* (contemplado pelo decoder)

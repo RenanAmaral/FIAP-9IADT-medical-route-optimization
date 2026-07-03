@@ -16,8 +16,9 @@ BAIXA) e reabastece em estacoes quando a carga acaba.
 - **baselines** (rota aleatoria e nearest neighbor) para comparacao justa;
 - **experimentos** E1/E2/E3 com tabela comparativa e metricas;
 - **visualizacao**: curva de convergencia e mapa da rota;
-- **relatorio** em linguagem natural (template deterministico + LLM opcional);
-- **61 testes** automatizados;
+- **integracao com LLM** (Gemini por padrao): relatorio, instrucoes ao motorista,
+  relatorio de eficiencia, sugestoes de melhoria e perguntas em linguagem natural (Q&A);
+- **67 testes** automatizados;
 - notebook demonstrativo ponta a ponta.
 
 Relatorio tecnico completo em [docs/relatorio_tecnico.md](docs/relatorio_tecnico.md).
@@ -111,19 +112,39 @@ print(result.fitness, result.decoded_route)
 
 ## Relatorio via LLM (opcional)
 
-O relatorio deterministico funciona offline. Para gerar via Claude:
+O relatorio deterministico funciona offline. Para gerar via LLM, o provider padrao e o
+**Google Gemini** (free tier). Crie a chave em https://aistudio.google.com e defina:
 
 ```bash
-pip install anthropic          # ja incluso no requirements
-export ANTHROPIC_API_KEY=...   # sua chave
+pip install google-genai       # ja incluso no requirements
+# Windows PowerShell:
+$env:GEMINI_API_KEY = "sua-chave"
 ```
 
+A mesma integracao cobre os quatro usos do item 3 do desafio:
+
 ```python
-from src.llm_report import build_route_payload, generate_report
+from src.llm_report import (
+    build_route_payload, generate_report, generate_driver_instructions,
+    answer_question, suggest_improvements,
+    build_efficiency_payload, generate_efficiency_report,
+)
 
 payload = build_route_payload(best, points, config)
-print(generate_report(payload))                 # template deterministico
-print(generate_report(payload, use_llm=True))   # via LLM (requer chave)
+
+print(generate_report(payload))                       # template deterministico (offline)
+print(generate_report(payload, use_llm=True))         # relatorio via Gemini
+print(generate_driver_instructions(payload))          # instrucoes para o motorista
+print(answer_question(payload, "Quantos reabastecimentos?"))  # Q&A em linguagem natural
+print(suggest_improvements(payload))                  # sugestoes de melhoria
+
+# relatorio de eficiencia usa os experimentos:
+from src.experiments import run_all_experiments
+resultados = run_all_experiments(points, distance_matrix, config)
+print(generate_efficiency_report(build_efficiency_payload(resultados)))
+
+# provider alternativo:
+print(generate_report(payload, use_llm=True, provider="anthropic"))  # Claude (ANTHROPIC_API_KEY)
 ```
 
 ## Regras consideradas
