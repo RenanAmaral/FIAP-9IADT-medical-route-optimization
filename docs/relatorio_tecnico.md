@@ -37,8 +37,14 @@ do fitness**, mantendo o cromossomo simples. Assim os operadores geneticos class
 - **Reabastecimento inserido automaticamente** durante a avaliacao ([src/decoder.py](../src/decoder.py)):
   ao percorrer o cromossomo, se a carga atual e menor que a demanda do proximo hospital,
   o decoder insere a estacao de abastecimento mais proxima e recarrega ao maximo.
-- **Capacidade nao vira penalidade artificial**: o desvio ate a estacao ja entra na
-  distancia total. Logo a capacidade e penalizada *naturalmente* pela distancia extra.
+- **Capacidade e penalizada sobretudo pela distancia**: o desvio ate a estacao mais
+  proxima ja entra na `distancia_total` — no dataset nacional, cada reabastecimento custa
+  **400 a 600 km reais**. Esse e o mecanismo dominante.
+- **Custo explicito por parada** (desvio deliberado do plano original): alem da distancia,
+  a fitness soma `λ_abastecimento × numero_de_reabastecimentos`. A justificativa e que uma
+  parada de reabastecimento tem um custo proprio — tempo de carga, mao de obra, janela de
+  operacao — que nao se reduz aos quilometros percorridos. Ver a analise de sensibilidade
+  na secao 5.
 - **Prioridade vira penalidade soft**: `penalidade_prioridade = Σ (peso_prioridade × posicao_de_visita)`.
   Minimizar essa soma empurra as entregas ALTA para o comeco da rota.
 - **Fitness** = `distancia_total + λ_prioridade × penalidade_prioridade + λ_abastecimento × penalidade_abastecimento`
@@ -118,6 +124,26 @@ ha 8 hospitais ALTA entre os 25. Tempo do E3 ~3,5s (vs 0,3s do E1).
 
 A melhor rota (E2) parte de Brasilia, cobre as 25 cidades com 6 reabastecimentos e
 percorre **17 015 km**. Ela e plotada sobre o **mapa do Brasil** por `plot_route_map`.
+
+### Sensibilidade: qual o peso real do termo de abastecimento?
+
+O plano original previa que a capacidade fosse penalizada *apenas* pela distancia extra.
+Optamos por manter tambem um custo explicito por parada (`λ_abastecimento = 10`). Medindo
+o efeito dessa decisao:
+
+- **O termo discrimina, mas pouco.** O numero de reabastecimentos varia entre solucoes:
+  em 2000 rotas aleatorias, 274 usaram 5 paradas e 1726 usaram 6. Entao o termo de fato
+  empurra para menos paradas — nao e uma constante inerte.
+- **A distancia domina por ~50x.** Cada parada custa **10** na fitness (0,05% de ~20 310),
+  enquanto o desvio fisico ate a estacao custa **400–600 km** reais (2–3% da fitness). O
+  mecanismo dominante continua sendo o natural, como o plano previa.
+- **Zerar o termo nao melhora a rota.** Rodando com `λ_abastecimento = 0`, o GA encontrou
+  uma rota *pior* sob os dois criterios (com e sem o termo) — a diferenca ficou dentro do
+  ruido entre seeds (~2%), nao foi efeito do termo.
+
+**Conclusao:** o custo por parada funciona como um *desempate* de baixo impacto, alinhado
+com a realidade operacional (uma parada consome tempo e mao de obra), sem distorcer a
+otimizacao — que continua guiada pela distancia e pela prioridade.
 
 ## 6. Integracao com LLM
 
